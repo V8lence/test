@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Bot Payment</title>
+  <script src="https://js.squareup.com/v2/paymentform"></script>
+</head>
+<body>
+  <h1>Upgrade to Pro Plan</h1>
+  <form id="payment-form">
+    <label for="discord-username">Discord Username:</label>
+    <input type="text" id="discord-username" required>
+    <div id="sq-card-number"></div>
+    <button type="submit">Pay \$20</button>
+  </form>
+
+  <script>
+    const paymentForm = new SqPaymentForm({
+      applicationId: "<SQUARE_APP_ID>",
+      inputClass: 'sq-input',
+      cardNumber: {
+        elementId: 'sq-card-number',
+        placeholder: 'Card Number'
+      },
+      callbacks: {
+        cardNonceResponseReceived: function (errors, nonce, cardData) {
+          if (errors) {
+            console.error('Encountered errors:', errors);
+            return;
+          }
+
+          const discordUsername = document.getElementById('discord-username').value;
+          fetch('<YOUR_WEBHOOK_URL>', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nonce, discordUsername })
+          }).then(response => {
+            if (response.ok) {
+              alert('Payment successful!');
+            } else {
+              alert('Payment failed.');
+            }
+          });
+        }
+      }
+    });
+
+    document.getElementById('payment-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      paymentForm.requestCardNonce();
+    });
+  </script>
+</body>
+</html>
